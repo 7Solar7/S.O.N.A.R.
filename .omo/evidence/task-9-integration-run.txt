@@ -1,0 +1,15 @@
+Task 9: Integration Tests - Integration Test Run Evidence
+Date: 2026-06-23
+
+Command: & ".venv\Scripts\python.exe" -m pytest tests/test_integration.py -v --tb=short
+Result: 7/7 PASSED
+
+tests/test_integration.py::test_full_pipeline_mocked PASSED
+tests/test_integration.py::test_db_roundtrip PASSED
+tests/test_integration.py::test_duplicate_scan_dedup PASSED
+tests/test_integration.py::test_missing_deps_error_msg PASSED
+tests/test_integration.py::test_empty_capture_produces_empty_list PASSED
+tests/test_integration.py::test_export_roundtrip PASSED
+tests/test_integration.py::test_fingerprinting_on_discovered_devices PASSED
+
+Duration: 0.24s

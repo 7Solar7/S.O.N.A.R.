@@ -1,0 +1,20 @@
+Task 6: Device Fingerprinting + MAC OUI Lookup - Test Results
+Date: 2026-06-23
+
+=== OUI Database ===
+Loaded 50 OUI entries (fallback CSV, download blocked by network)
+
+=== Fingerprint Tests (10/10 passed) ===
+tests/test_fingerprint.py::test_load_oui_db_returns_dict PASSED
+tests/test_fingerprint.py::test_lookup_manufacturer_known PASSED
+tests/test_fingerprint.py::test_lookup_manufacturer_unknown PASSED
+tests/test_fingerprint.py::test_lookup_manufacturer_short_mac PASSED
+tests/test_fingerprint.py::test_guess_device_type_router PASSED
+tests/test_fingerprint.py::test_guess_device_type_printer PASSED
+tests/test_fingerprint.py::test_guess_os_from_dhcp_vendor PASSED
+tests/test_fingerprint.py::test_guess_os_empty_hostname PASSED
+tests/test_fingerprint.py::test_guess_device_type_returns_string_or_none PASSED
+tests/test_fingerprint.py::test_lookup_manufacturer_case_insensitive PASSED
+
+=== Full Suite (61/61 passed, 0 regressions) ===
+All existing 51 tests continue to pass.

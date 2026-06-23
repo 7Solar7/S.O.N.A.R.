@@ -1,0 +1,4 @@
+== QA: all deps import ==
+$ & ".venv\Scripts\python.exe" -c "import rich, click, dotenv; print('all deps ok')"
+all deps ok
+PASS: rich, click, python-dotenv all import cleanly

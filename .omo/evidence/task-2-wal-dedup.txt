@@ -1,0 +1,13 @@
+Task 2 QA Evidence - WAL Mode + Dedup
+=======================================
+Date: 2026-06-23
+
+QA Scenario 2: WAL mode enabled
+- test_init_db_enables_wal PASSED
+- Verified PRAGMA journal_mode returns "wal"
+
+QA Scenario 3: Dedup works (insert same MAC twice, only 1 row)
+- test_upsert_device_deduplicates_on_mac PASSED
+- Inserted AA:BB:CC:DD:EE:FF with IP 192.168.1.100 then 192.168.1.101
+- get_device_count returned 1
+- get_device_by_mac returned updated IP 192.168.1.101

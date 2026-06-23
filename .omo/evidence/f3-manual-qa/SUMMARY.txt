@@ -1,0 +1,37 @@
+﻿F3: Real Manual QA - Execution Summary
+======================================
+Date: 2026-06-23 17:12:34
+Platform: win32, Python 3.13.13, pytest 9.1.1
+
+SCENARIO RESULTS:
+  1. CLI help (all subcommands):           PASS (exit 0, all subcommands listed)
+  2. Scan with ARP-only:                   PASS (exit 0, 9 devices discovered)
+  3. List from test DB:                    PASS (exit 0, table displayed)
+  4. Export to stdout JSON:                PASS (exit 0, valid JSON array)
+  5. Export to file JSON:                  PASS (exit 0, file exists, valid JSON)
+  6. Interfaces listing:                   PASS (exit 0)
+  7. Scan with format json:                PASS (exit 0, valid JSON output)
+  8. Scan with min duration (1s):          PASS (exit 0, completed quickly)
+  9. List with type filter (Router):       PASS (exit 0, "No devices" - correct, all Unknown)
+  10. Empty DB list:                       PASS (exit 0, helpful message shown)
+  11. Full test suite (pytest):            PASS (77/77 tests passed in 3.10s)
+  12. Scan -> List -> Export round-trip:    PASS (9 devices consistent across all 3 ops)
+
+INTEGRATION TEST:
+  - Scan discovered 9 devices via ARP cache
+  - List displayed all 9 in table format
+  - Export produced valid JSON with 9 device records
+  - All timestamps, MACs, IPs consistent across operations
+
+EDGE CASES TESTED:
+  - Empty database (scenario 10): Shows "No devices discovered yet. Run 'nvs scan' first."
+  - Type filter with no matches (scenario 9): Gracefully shows no results
+  - Minimum duration 1s (scenario 8): Scan completes normally
+  - JSON format output (scenario 7): Scan outputs JSON instead of table
+
+TEST SUITE DETAILS:
+  - 77 tests across 8 test modules
+  - All PASSED in 3.10s
+  - Covers: arp_cache, capture, cli, database, discover, exporter, fingerprint, integration
+
+VERDICT: APPROVE - All 12 scenarios pass, all 77 unit tests pass, integration round-trip verified.

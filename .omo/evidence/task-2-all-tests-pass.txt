@@ -1,0 +1,18 @@
+Task 2 QA Evidence - All Tests Pass
+====================================
+Date: 2026-06-23
+Python: 3.13.13
+pytest: 9.1.1
+
+tests/test_database.py::test_init_db_creates_table PASSED
+tests/test_database.py::test_init_db_enables_wal PASSED
+tests/test_database.py::test_init_db_integrity PASSED
+tests/test_database.py::test_upsert_device_inserts PASSED
+tests/test_database.py::test_upsert_device_deduplicates_on_mac PASSED
+tests/test_database.py::test_get_all_devices PASSED
+tests/test_database.py::test_get_device_by_mac_found PASSED
+tests/test_database.py::test_get_device_by_mac_not_found PASSED
+tests/test_database.py::test_get_device_count_empty PASSED
+tests/test_database.py::test_mac_normalization PASSED
+
+10 passed in 0.14s

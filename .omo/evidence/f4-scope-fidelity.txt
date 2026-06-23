@@ -1,0 +1,166 @@
+F4: SCOPE FIDELITY CHECK — NVS Project
+========================================
+Date: 2026-06-23
+
+1. TASK-BY-TASK SCOPE COMPLIANCE
+=================================
+
+Task 1: Project Scaffolding — COMPLIANT
+  Created: src/nvs/__init__.py, __main__.py, requirements.txt, .env.example,
+           .gitignore, pyproject.toml, .venv/
+  All spec items present. No extra files.
+
+Task 2: Data Model + SQLite — COMPLIANT
+  Created: src/nvs/models.py (Device dataclass with all 9 fields)
+  Created: src/nvs/database.py (init_db, upsert_device, get_all_devices,
+           get_device_by_mac, get_device_count)
+  WAL mode enabled. Tests: 10 tests in test_database.py.
+
+Task 3: CaptureProvider + pyshark — COMPLIANT
+  Created: src/nvs/capture.py with:
+    - CaptureProvider ABC (get_interfaces, capture, check_dependencies)
+    - PysharkCaptureProvider concrete class
+    - InterfaceInfo dataclass
+    - get_best_interface(), check_admin(), check_tshark()
+    - DEFAULT_BPF_FILTER
+  Tests: 10 tests in test_capture.py.
+
+Task 4: Device Discovery — COMPLIANT
+  Created: src/nvs/arp_cache.py (ArpEntry, read_arp_cache, get_devices_from_arp)
+  Created: src/nvs/discover.py (PacketParser, Discoverer)
+    Parsers: parse_arp, parse_mdns, parse_ssdp, parse_dhcp, parse_upnp
+    UPnP parser is minimal (returns None for most packets) — acceptable stub.
+  Tests: 6 tests in test_arp_cache.py, 10 tests in test_discover.py.
+
+Task 5: Expanded DB CRUD — COMPLIANT
+  Added to database.py: delete_device, get_devices_by_type, get_statistics,
+    export_to_json, import_from_json, close
+  Tests: 6 additional tests in test_database.py.
+
+Task 6: Fingerprinting — PARTIAL COMPLIANCE
+  Created: src/nvs/fingerprint.py with:
+    - load_oui_db, lookup_manufacturer, guess_device_type, guess_os
+  ISSUES:
+    a) nvs_oui.csv has only 50 LINES — plan specifies ~42K entries (full IEEE OUI).
+       This is a SCOPE SHORTFALL: the OUI database is not the "full IEEE" registry.
+    b) guess_device_type/guess_os lack the required EXPERIMENTAL documentation
+       ("This is a best-effort heuristic classification...").
+    c) scripts/download_oui.py does not exist (referenced in plan Task 6 + Task 10).
+  Tests: 9 tests in test_fingerprint.py.
+
+Task 7: CLI — COMPLIANT
+  Created: src/nvs/cli.py with scan, list, export, interfaces subcommands.
+  All specified options present: --interface, --duration, --format, --db-path,
+    --verbose, --arp-only.
+  Pre-flight validation with graceful fallback to ARP cache.
+  Tests: 9 tests in test_cli.py.
+
+Task 8: Exporter — COMPLIANT
+  Created: src/nvs/exporter.py with export_json, export_table, export_summary,
+    handle_empty.
+  Tests: 8 tests in test_exporter.py.
+
+Task 9: Integration Tests — PARTIAL COMPLIANCE
+  Created: tests/conftest.py with fixtures (test_db_path, sample_devices,
+    MockCaptureProvider, mock_capture_provider, oui_db).
+  Created: tests/test_integration.py with 7 tests.
+  ISSUE: tests/fixtures/pcap/ directory EXISTS but is EMPTY — no pcap fixtures
+    as specified (mdns_only.pcap, ssdp_only.pcap, arp_only.pcap, etc.).
+
+Task 10: README + Docs — COMPLIANT
+  Created: README.md with Overview, Prerequisites, Quick Start, Usage, How It Works,
+    Limitations, Troubleshooting, Development sections.
+  Updated: pyproject.toml with [project.scripts] entry.
+  Updated: .gitignore with comprehensive patterns.
+  Updated: .env.example with NVD_API_KEY placeholder.
+
+
+2. MUST NOT DO COMPLIANCE — ALL CLEAN
+======================================
+
+  [PASS] No web server code (flask/fastapi/django/http.server/uvicorn/gunicorn)
+  [PASS] No NVD API calls or CVE references in source code
+  [PASS] No async/await or asyncio usage
+  [PASS] No ORM imports (sqlalchemy/peewee/django ORM)
+  [PASS] No active scanning code (scapy/nmap/SYN/ICMP/port scanning)
+  [PASS] No config file parsing (yaml/toml config loading)
+  [PASS] No unnecessary abstractions (no factory factories, no premature caching)
+
+
+3. CROSS-TASK CONTAMINATION — CLEAN
+=====================================
+
+  Task 1: Only scaffold files — CLEAN
+  Task 2: models.py, database.py, test_database.py — CLEAN
+  Task 3: capture.py, test_capture.py — CLEAN
+  Task 4: arp_cache.py, discover.py, test_arp_cache.py, test_discover.py — CLEAN
+  Task 5: Expands database.py + test_database.py (within spec) — CLEAN
+  Task 6: fingerprint.py, nvs_oui.csv, test_fingerprint.py — CLEAN
+  Task 7: cli.py, __main__.py, test_cli.py — CLEAN
+  Task 8: exporter.py, test_exporter.py — CLEAN
+  Task 9: conftest.py, test_integration.py — CLEAN
+  Task 10: README.md, pyproject.toml, .gitignore, .env.example — CLEAN
+
+  No cross-task file contamination detected.
+
+
+4. UNACCOUNTED FILES
+=====================
+
+  MISSING (specified in plan but not created):
+    - scripts/download_oui.py — referenced in Task 6 and Task 10 deliverables
+    - tests/fixtures/pcap/mdns_only.pcap
+    - tests/fixtures/pcap/ssdp_only.pcap
+    - tests/fixtures/pcap/arp_only.pcap
+    - tests/fixtures/pcap/dhcp_only.pcap
+    - tests/fixtures/pcap/mixed.pcap
+
+  UNEXPECTED (not in plan):
+    - Product Requirements Document_ Home Network Vulnerability Scanner.md
+      (original PRD — acceptable, pre-existing reference file)
+    - src/nvs.egg-info/ (generated by pip install -e, acceptable)
+
+
+5. DELIVERABLE VERIFICATION
+=============================
+
+  [PASS] src/nvs/__init__.py
+  [PASS] src/nvs/__main__.py (calls cli.main())
+  [PASS] src/nvs/cli.py
+  [PASS] src/nvs/capture.py
+  [PASS] src/nvs/discover.py
+  [PASS] src/nvs/arp_cache.py
+  [PASS] src/nvs/fingerprint.py
+  [PASS] src/nvs/models.py
+  [PASS] src/nvs/database.py
+  [PASS] src/nvs/exporter.py
+  [PASS] tests/conftest.py
+  [PASS] tests/test_database.py
+  [PASS] tests/test_capture.py
+  [PASS] tests/test_arp_cache.py
+  [PASS] tests/test_discover.py
+  [PASS] tests/test_fingerprint.py
+  [PASS] tests/test_cli.py
+  [PASS] tests/test_exporter.py
+  [PASS] tests/test_integration.py
+  [WARN] nvs_oui.csv — EXISTS but only 50 lines (spec says ~42K entries)
+  [PASS] requirements.txt
+  [PASS] pyproject.toml
+  [PASS] .env.example
+  [PASS] .gitignore
+  [PASS] README.md
+
+
+6. SUMMARY OF ISSUES
+=====================
+
+  CRITICAL:
+    1. nvs_oui.csv has only 50 lines — not the "full IEEE OUI" (~42K entries)
+       specified in Task 6. This is the most significant scope shortfall.
+
+  MINOR:
+    2. scripts/download_oui.py missing (referenced in Task 6 + Task 10).
+    3. tests/fixtures/pcap/ directory is empty — no pcap fixtures as specified
+       in Task 9.
+    4. guess_device_type/guess_os lack the required EXPERIMENTAL documentation
+       warning (Task 6 requirement).

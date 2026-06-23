@@ -1,0 +1,20 @@
+Task 6: Device Fingerprinting + MAC OUI Lookup - Implementation Summary
+Date: 2026-06-23
+
+Files Created:
+- src/nvs/fingerprint.py: Core fingerprinting module
+- tests/test_fingerprint.py: 10 TDD tests
+- nvs_oui.csv: 50-entry fallback OUI database
+
+Files Modified: (none)
+
+Module API:
+- load_oui_db(path=None) -> dict[str, str]: Loads OUI CSV into prefix->manufacturer dict, cached globally
+- lookup_manufacturer(mac, oui_db) -> str | None: Matches MAC OUI prefix (6/8/12 char) against DB
+- guess_device_type(device) -> str | None: Heuristic device type from hostname/manufacturer
+- guess_os(device) -> str | None: Heuristic OS from hostname patterns
+
+Device Type Heuristics: Router, Printer, Phone, Smart TV, Smart Speaker, Gaming Console, Computer, Single Board Computer
+OS Heuristics: Windows, macOS/iOS, Linux, Android
+
+Note: IEEE OUI download was blocked; fallback CSV has 50 common entries. Replace nvs_oui.csv with full database when network access is available.

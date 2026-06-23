@@ -1,0 +1,6 @@
+== QA: pyshark import ==
+$ & ".venv\Scripts\python.exe" -c "import pyshark; print('pyshark ok')"
+pyshark ok
+$ & ".venv\Scripts\pip.exe" show pyshark | Select-String "Version"
+Version: 0.6
+PASS: pyshark 0.6 imports cleanly (note: pyshark has no __version__ attr, version confirmed via pip)

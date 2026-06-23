@@ -1,0 +1,88 @@
+F1: Plan Compliance Audit — NVS Core Scanner
+Date: 2026-06-23
+Plan file: .omo/plans/nvs-core-scanner.md
+
+=== DELIVERABLES CHECK ===
+✅ src/nvs/ — Python package with 8 modules (cli, capture, discover, fingerprint, models, database, exporter, arp_cache)
+✅ tests/ — 8 test files + conftest.py (77 tests total)
+✅ nvs_oui.csv — Bundled OUI database (50 entries — SEE ISSUE BELOW)
+❌ scripts/download_oui.py — MISSING (plan required this build script)
+✅ requirements.txt — Pinned: pyshark==0.6, rich==15.0.0, click==8.4.1, python-dotenv==1.2.2
+✅ .env.example — Template with NVD_API_KEY placeholder
+✅ README.md — Setup guide with Npcap instructions, limitations, usage reference
+✅ pyproject.toml — Package metadata with [project.scripts] entry
+✅ .gitignore — Present
+
+=== MUST HAVE VERIFICATION ===
+
+1. ✅ ARP cache reading — arp_cache.py:14-50 — Get-NetNeighbor with arp.exe -a fallback, ArpEntry namedtuple, get_devices_from_arp() wraps to Device objects
+2. ✅ Passive packet capture via pyshark — capture.py:79-89 — PysharkCaptureProvider wraps pyshark.LiveCapture with BPF filter
+3. ✅ Device discovery from mDNS, SSDP, UPnP, ARP, DHCP — discover.py:9-108 — PacketParser with parse_mdns, parse_ssdp, parse_dhcp, parse_arp, parse_upnp (UPnP is stub-only: returns None)
+4. ✅ MAC-based dedup with first_seen/last_seen — models.py:17-18, discover.py:130-141 — Dedup by MAC key in Discoverer.discover()
+5. ⚠️ Full IEEE OUI lookup (~42K entries) — fingerprint.py:14-37 loads from nvs_oui.csv, but csv has only 50 entries (plan requires ~42K)
+6. ✅ CLI subcommands scan/list/export/interfaces + --arp-only — cli.py:12-183 — All 4 subcommands implemented with --arp-only flag
+7. ✅ JSON export + rich CLI table — exporter.py:10-93 — export_json() and export_table() using rich.Table
+8. ✅ Pre-flight dependency validation — capture.py:36-50 (check_dependencies), capture.py:123-131 (check_admin), capture.py:134-144 (check_tshark)
+9. ✅ Graceful error handling — cli.py:46-51 (missing deps), cli.py:34-35 (empty ARP), cli.py:68-69 (zero packets), cli.py:83-85 (capture failure)
+10. ✅ TDD with pytest (30+ tests) — 77 tests all passing across 8 test files
+11. ✅ BPF filtering — capture.py:9 — "arp or port 5353 or port 1900 or (udp port 67 or udp port 68)"
+12. ✅ SQLite storage with WAL mode — database.py:9 — "PRAGMA journal_mode=WAL"
+13. ❌ Honest output labeling — fingerprint.py:60-128 — guess_device_type() and guess_os() have NO docstrings marking them as experimental/low-confidence (plan line 586 requires: "This is a best-effort heuristic classification...")
+
+Must Have: 11/13 passed, 2 issues found
+
+=== MUST NOT HAVE VERIFICATION ===
+
+1. ✅ NO CVE lookup or NVD API calls — grep for CVE/NVD in src/: no matches
+2. ✅ NO web dashboard or HTTP server — grep for flask/FastAPI/http.server in src/: no matches
+3. ✅ NO Windows service or background process — grep for service/background in src/: no matches
+4. ✅ NO active scanning — grep for syn_scan/ICMP/ping/nmap in src/: no matches
+5. ✅ NO marketing claims as "vulnerability scanner" — README.md:5 and :124 explicitly state "not a vulnerability scanner"
+6. ✅ NO outbound network calls — grep for requests/urllib/httpx/aiohttp in src/: no matches
+7. ✅ NO async/await — grep for async def/await/asyncio in src/: no matches (grep hit was "from typing import Any" — false positive)
+8. ✅ NO ORM — grep for SQLAlchemy/Peewee in src/: no matches
+9. ✅ NO config file parsing — grep for yaml/toml config loading in src/: no matches
+10. ✅ NO empty tables for future features — database.py:10-22 — only "devices" table created
+11. ✅ NO continuous/watch mode — grep for while True/asyncio.run in src/: no matches
+12. ✅ NO debug web endpoints — grep for /api/health/service endpoints in src/: no matches
+
+Must NOT Have: 12/12 passed
+
+=== TASKS VERIFICATION ===
+
+Task 1 (Project Scaffolding): ✅ src/nvs/, .venv/, requirements.txt, .env.example, pyproject.toml exist
+Task 2 (Data Model + SQLite): ✅ models.py + database.py with full CRUD + WAL
+Task 3 (CaptureProvider): ✅ capture.py with ABC, PysharkCaptureProvider, check_admin/tshark
+Task 4 (Device Discovery): ✅ discover.py with PacketParser + Discoverer + arp_cache.py
+Task 5 (DB CRUD Expanded): ✅ database.py has delete, by_type, statistics, export/import, close
+Task 6 (Fingerprinting): ✅ fingerprint.py with OUI lookup + guess_device_type + guess_os
+Task 7 (CLI): ✅ cli.py with scan/list/export/interfaces subcommands
+Task 8 (JSON Export + Table): ✅ exporter.py with export_json, export_table, export_summary
+Task 9 (Integration Tests): ✅ test_integration.py + conftest.py with 7 integration tests (pcap fixtures dir is empty — tests use mocks)
+Task 10 (README + Docs): ✅ README.md with all required sections
+
+Tasks: 10/10 implemented
+
+=== ISSUES FOUND ===
+
+ISSUE 1 (MAJOR): OUI database only 50 entries vs ~42K required
+  - Plan line 588-591: "Include ALL entries (IEEE MA-L + MA-M + MA-S). No curated subset"
+  - Current nvs_oui.csv has 50 entries — a tiny curated subset
+  - scripts/download_oui.py build script is also MISSING
+  - Impact: Most real devices will show "Unknown manufacturer"
+
+ISSUE 2 (MINOR): Heuristic functions missing experimental labeling
+  - Plan line 586: guess_device_type and guess_os MUST include documentation noting experimental nature
+  - fingerprint.py:60 and 109 have no docstrings at all
+  - Impact: User trust — undocumented heuristics may be mistaken for authoritative classifications
+
+ISSUE 3 (MINOR): UPnP parser is a no-op stub
+  - discover.py:90-96 parse_upnp() always returns None
+  - Plan required UPnP device discovery
+  - Impact: UPnP devices won't be discovered via packet capture
+
+=== TEST SUITE ===
+77 tests passed in 3.19s — all green
+
+=== EVIDENCE FILES ===
+No per-task evidence files found in .omo/evidence/ directory (tasks saved evidence to task-specific files that may have been cleaned up)

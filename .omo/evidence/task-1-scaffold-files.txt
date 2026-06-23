@@ -1,0 +1,8 @@
+== QA: scaffold files exist ==
+$ Test-Path src/nvs/__main__.py
+True
+$ Test-Path .env.example
+True
+$ Test-Path .gitignore
+True
+PASS: All scaffold files present
